@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <vector>
 #include <string>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "Shader.hpp"
 
@@ -21,15 +22,6 @@ public:
 	ShaderProgram(std::vector<GLuint> shaders);
 
 	/**
-	 * Gets the uniform location of variable
-	 *
-	 * @param uniform Name of the uniform
-	 *
-	 * @return Location of uniform
-	 */
-	GLint GetUniformLocation(const std::string& uniform);
-
-	/**
 	 * Sets the program as active program
 	 */
 	void Use();	
@@ -40,6 +32,25 @@ public:
 	 * @return ID of the program
 	 */
 	GLuint GetId() const { return id; }
+	
+	/**
+	 * Gets the uniform location of variable
+	 *
+	 * @param uniform Name of the uniform
+	 *
+	 * @return Location of uniform
+	 */
+	GLint GetUniformLocation(const std::string& uniform);
+
+	/**
+	 * Sets the uniform of the shader
+	 *
+	 * @param uniform Name of the uniform
+	 * @param value New value of the uniform 
+	 */
+	void SetUniformMat4f(const std::string& uniform, const glm::mat4 value);
+	void SetUniformVec3f(const std::string& uniform, const glm::vec3 value);
+	void SetUniform1i(const std::string& uniform, int value);
 private:
 	GLuint id;
 };

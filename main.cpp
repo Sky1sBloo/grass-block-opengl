@@ -44,8 +44,9 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// Load texture
-	Texture grassTex("textures/testImg.png", GL_TEXTURE0);	
+	Texture grassTex("textures/grass-tex.jpg", GL_TEXTURE0);	
 
+	// Cube 1
 	Cube cube;
 	VAO vao;
 	vao.Bind();
@@ -61,16 +62,36 @@ int main()
 			&cube.GetIndices().front(),
 			GL_STATIC_DRAW);
 
-	vao.DefineArrayAttribute(0, 3, 5, 0);
-	vao.DefineArrayAttribute(1, 2, 5, 3);
+	vao.DefineArrayAttribute(0, 3, 8, 0);
+	vao.DefineArrayAttribute(1, 3, 8, 3);
+	vao.DefineArrayAttribute(2, 2, 8, 6);
 
 	vbo.Unbind();
 	vao.Unbind();
-	ebo.Unbind();	
+	ebo.Unbind();
+
+	// Light
+	glm::vec3 lightColor = glm::vec3(1.f, 1.f, 0.1f);
+	VAO lightVAO;
+	lightVAO.Bind();
+
+	vbo.Bind();
+	ebo.Bind();
+
+	lightVAO.DefineArrayAttribute(0, 3, 8, 0);
+
+	vbo.Unbind();
+	lightVAO.Unbind();
+	ebo.Unbind();
 
 	// Coordinate system
 	glm::mat4 model = glm::mat4(1.f);
+	glm::vec3 lightPos = glm::vec3(3.f, 5.f, 4.f);
+	glm::mat4 lightModel = glm::mat4(1.f);
+	lightModel = glm::scale(lightModel, glm::vec3(0.5f, 0.5f, 0.5f));
+	lightModel = glm::translate(lightModel, lightPos);
 	glm::mat4 projection = glm::perspective(glm::radians(70.f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.f);
+	float specularStrength = 0.5f;
 
 	// Camera
 	glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 5.f);
@@ -84,11 +105,14 @@ int main()
 
 	// Load shaders
 	Shader vertexShader("shaders/3d-perspective.vert", GL_VERTEX_SHADER);
-	Shader fragmentShader("shaders/col-shader.frag", GL_FRAGMENT_SHADER);
+	Shader fragmentShader("shaders/texture-shader.frag", GL_FRAGMENT_SHADER);
+	Shader flatFragmentShader("shaders/col-shader.frag", GL_FRAGMENT_SHADER);
 	ShaderProgram shaderProgram({ vertexShader.GetId(), fragmentShader.GetId() });
+	ShaderProgram lightShaderProgram({ vertexShader.GetId(),flatFragmentShader.GetId() });
 
 	vertexShader.DeleteShader();
 	fragmentShader.DeleteShader();
+	flatFragmentShader.DeleteShader();
 
 	// Window loop
 	Event ev(window.GetID());
@@ -130,13 +154,23 @@ int main()
 		else if (pitch  < -89.f)
 			pitch = -89.f;
 
+
+		// Camera logic
 		cameraDirection.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 		cameraDirection.y = sin(glm::radians(pitch));
 		cameraDirection.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	
 		cameraFront = glm::normalize(cameraDirection);
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-	
+
+		// Transform
+		float radius = 2.5f;
+		lightPos = glm::vec3(5 * cos(glfwGetTime()),
+				5 * cos(glfwGetTime()),	
+				5 * sin(glfwGetTime()));
+				
+		lightModel = glm::translate(model, lightPos);
+
 		// Background color 
 		glClearColor(0.1f, 0.5f, 0.5f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -144,15 +178,31 @@ int main()
 		// Draw
 		grassTex.Bind();
 		
+		// Draw model
 		shaderProgram.Use();
-		glUniformMatrix4fv(shaderProgram.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(shaderProgram.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(shaderProgram.GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
-		glUniform1i(shaderProgram.GetUniformLocation("texSampler"), 0);
-
+		shaderProgram.SetUniformMat4f("model", model);
+		shaderProgram.SetUniformMat4f("view", view);
+		shaderProgram.SetUniformMat4f("projection", projection);
+		shaderProgram.SetUniform1i("texSampeler", 0);
+		shaderProgram.SetUniformVec3f("lightColor", lightColor);
+		shaderProgram.SetUniformVec3f("lightPos", lightPos);
+		shaderProgram.SetUniformVec3f("viewPos", cameraPos);
+		
 		vao.Bind();
 		glDrawElements(GL_TRIANGLES, cube.GetIndices().size(), GL_UNSIGNED_INT, 0);
 		vao.Unbind();
+		
+		// Light model
+		lightShaderProgram.Use();
+		lightShaderProgram.SetUniformMat4f("model", lightModel);
+		lightShaderProgram.SetUniformMat4f("view", view);
+		lightShaderProgram.SetUniformMat4f("projection", projection);
+		lightShaderProgram.SetUniformVec3f("baseColor", lightColor);
+		glUniform3f(lightShaderProgram.GetUniformLocation("baseColor"), lightColor.x, lightColor.y, lightColor.z);
+
+		lightVAO.Bind();
+		glDrawElements(GL_TRIANGLES, cube.GetIndices().size(), GL_UNSIGNED_INT, 0);
+		lightVAO.Unbind();
 
 		window.SwapBuffers();
 	}
