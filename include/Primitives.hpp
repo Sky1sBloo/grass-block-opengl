@@ -18,6 +18,15 @@ protected:
 };
 
 /**
+ * Textured cube with a single texture
+ */
+class CubeTex : public Primitive
+{
+public:
+	CubeTex();
+};
+
+/**
  * Textured Cube with UV map coordinates
  * 0 1 2 3 4
  *0  ---
@@ -28,10 +37,10 @@ protected:
  *   |b|
  *3  ---
  */
-class Cube : public Primitive
+class UVCube : public Primitive
 {
 public:
-	Cube();
+	UVCube();
 private:
 	const float cubeUVCol[5] = { 0, 0.25f, 0.5f, 0.75f, 1.f };
 	const float cubeUVRow[4] = { 0, 1.f / 3.f, 2.f / 3.f, 1.f };

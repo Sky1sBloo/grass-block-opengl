@@ -6,10 +6,11 @@ Event::Event(GLFWwindow* window) :
 {
 	int windowWidth, windowHeight;
 	glfwGetWindowSize(window, &windowWidth, &windowHeight);
+	
 	mLastMousePos = JD::Vector2<double>(
 			static_cast<double>(windowWidth) / 2,
 			static_cast<double>(windowHeight) / 2
-			);
+			); 
 }
 
 void Event::PollEvents()

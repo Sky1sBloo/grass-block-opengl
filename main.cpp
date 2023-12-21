@@ -45,10 +45,11 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 	// Load texture
-	Texture grassTex("textures/grass-tex.jpg", GL_TEXTURE0);	
+	Texture container("textures/container2.png", GL_TEXTURE0);	
+	Texture containerSpecular("textures/container2-specular.png", GL_TEXTURE1);
 
 	// Cube 1
-	Cube cube;
+	CubeTex cube;
 	VAO vao;
 	vao.Bind();
 	BufferObject vbo(GL_ARRAY_BUFFER);
@@ -72,7 +73,7 @@ int main()
 	ebo.Unbind();
 
 	// Light
-	glm::vec3 lightColor = glm::vec3(1.f, 1.f, 0.8f);
+	glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
 	VAO lightVAO;
 	lightVAO.Bind();
 
@@ -160,21 +161,19 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Draw
-		grassTex.Bind();
+		container.Bind();
+		containerSpecular.Bind();
 		
 		// Draw model
 		shaderProgram.Use();
 		shaderProgram.SetUniformMat4f("model", model);
 		shaderProgram.SetUniformMat4f("cameraView", camera.GetView());
-		shaderProgram.SetUniform1i("texSampler", 0);
 		shaderProgram.SetUniformVec3f("lightColor", lightColor);
 		shaderProgram.SetUniformVec3f("lightPos", lightPos);
 		shaderProgram.SetUniformVec3f("viewPos", camera.GetPosition());
 
-
-		shaderProgram.SetUniformVec3f("material.ambient", ambientColor); 
-		shaderProgram.SetUniformVec3f("material.diffuse", modelColor); 
-		shaderProgram.SetUniformVec3f("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		shaderProgram.SetUniform1i("material.diffuse", 0); 
+		shaderProgram.SetUniform1i("material.specular", 1);
 		shaderProgram.SetUniform1f("material.shininess", 32.f);
 		
 		vao.Bind();

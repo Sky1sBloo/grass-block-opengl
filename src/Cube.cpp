@@ -1,44 +1,43 @@
 #include "Primitives.hpp"
-#include <iostream>
 
-Cube::Cube() 
+CubeTex::CubeTex()
 {
 	mVertices = {
-		// Front                       // Normals
-		-1.f,   1.f,  1.f, 0.f, 0.f, 1.f, cubeUVCol[1], cubeUVRow[1],
-		-1.f,  -1.f, 1.f, 0.f, 0.f, 1.f, cubeUVCol[1], cubeUVRow[2], 
-		1.f, -1.f, 1.f, 0.f, 0.f, 1.f, cubeUVCol[2], cubeUVRow[2],
-		1.f,  1.f, 1.f, 0.f, 0.f, 1.f, cubeUVCol[2], cubeUVRow[1],
+		// Vertices 			// Normals 			// Tex coords
+		-1.f,   1.f,  1.f, 0.f, 0.f, 1.f, 0.f, 0.f,
+		-1.f,  -1.f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f, 
+		1.f, -1.f, 1.f, 0.f, 0.f, 1.f, 1.f, 1.f, 
+		1.f,  1.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f ,
 	
 		// Back
-		-1.f,  1.f, -1.f, 0.f, 0.f, -1.f, cubeUVCol[3], cubeUVRow[1],
-		-1.f, -1.f, -1.f, 0.f, 0.f, -1.f, cubeUVCol[3], cubeUVRow[2],
-		 1.f, -1.f, -1.f, 0.f, 0.f, -1.f, cubeUVCol[4], cubeUVRow[2],
-		 1.f,  1.f, -1.f, 0.f, 0.f, -1.f, cubeUVCol[4], cubeUVRow[1],
+		-1.f,  1.f, -1.f, 0.f, 0.f, -1.f, 0.f, 0.f, 
+		-1.f, -1.f, -1.f, 0.f, 0.f, -1.f, 0.f, 1.f,
+		 1.f, -1.f, -1.f, 0.f, 0.f, -1.f, 1.f, 1.f,
+		 1.f,  1.f, -1.f, 0.f, 0.f, -1.f, 1.f, 0.f,
 	
 		// Left
-		-1.f,  1.f, -1.f, -1.f, 0.f, 0.f, cubeUVCol[0], cubeUVRow[1],
-		-1.f, -1.f, -1.f, -1.f, 0.f, 0.f, cubeUVCol[0], cubeUVRow[2],
-		-1.f, -1.f,  1.f, -1.f, 0.f, 0.f, cubeUVCol[1], cubeUVRow[2],
-		-1.f,  1.f,  1.f, -1.f, 0.f, 0.f, cubeUVCol[1], cubeUVRow[1],
+		-1.f,  1.f, -1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 
+		-1.f, -1.f, -1.f, -1.f, 0.f, 0.f, 0.f, 1.f, 
+		-1.f, -1.f,  1.f, -1.f, 0.f, 0.f, 1.f, 1.f,
+		-1.f,  1.f,  1.f, -1.f, 0.f, 0.f, 1.f, 0.f,
 	
 		// Right
-		1.f,  1.f,  1.f, 1.f, 0.f, 0.f, cubeUVCol[2], cubeUVRow[1],
-		1.f, -1.f,  1.f, 1.f, 0.f, 0.f, cubeUVCol[2], cubeUVRow[2],
-		1.f, -1.f, -1.f, 1.f, 0.f, 0.f,  cubeUVCol[3], cubeUVRow[2],
-		1.f,  1.f, -1.f, 1.f, 0.f, 0.f,  cubeUVCol[3], cubeUVRow[1],
+ 		 1.f,   1.f,   1.f,  1.f,  0.f,  0.f, 0.f, 0.f, 
+		1.f, -1.f,  1.f, 1.f, 0.f, 0.f, 0.f, 1.f,
+		1.f, -1.f, -1.f, 1.f, 0.f, 0.f, 1.f, 1.f,
+		1.f,  1.f, -1.f, 1.f, 0.f, 0.f, 1.f, 0.f,
 	
 		// Top
-		-1.f, 1.f, -1.f, 0.f, 1.f, 0.f, cubeUVCol[1], cubeUVRow[0],
-		-1.f, 1.f,  1.f, 0.f, 1.f, 0.f, cubeUVCol[1], cubeUVRow[1],
-		 1.f, 1.f,  1.f, 0.f, 1.f, 0.f, cubeUVCol[2], cubeUVRow[1],
-		 1.f, 1.f, -1.f, 0.f, 1.f, 0.f, cubeUVCol[2], cubeUVRow[0],
+		-1.f, 1.f, -1.f, 0.f, 1.f, 0.f,0.f, 0.f, 
+		-1.f, 1.f,  1.f, 0.f, 1.f, 0.f, 0.f, 1.f,
+		 1.f, 1.f,  1.f, 0.f, 1.f, 0.f, 1.f, 1.f, 
+		 1.f, 1.f, -1.f, 0.f, 1.f, 0.f, 1.f, 0.f, 
 	
 		// Bottom
-		-1.f, -1.f,  1.f, 0.f, -1.f, 0.f, cubeUVCol[1], cubeUVRow[2],
-		-1.f, -1.f, -1.f, 0.f, -1.f, 0.f, cubeUVCol[1], cubeUVRow[3],
-		1.f,  -1.f, -1.f, 0.f, -1.f, 0.f, cubeUVCol[2], cubeUVRow[3],
-		1.f,  -1.f,  1.f, 0.f, -1.f, 0.f, cubeUVCol[2], cubeUVRow[2]
+		-1.f, -1.f,  1.f, 0.f, -1.f, 0.f, 0.f, 0.f, 
+		-1.f, -1.f, -1.f, 0.f, -1.f, 0.f, 0.f, 1.f, 
+		1.f,  -1.f, -1.f, 0.f, -1.f, 0.f, 1.f, 1.f, 
+		1.f,  -1.f,  1.f, 0.f, -1.f, 0.f, 1.f, 0.f 
 	};
 
 	mIndices = {
@@ -66,4 +65,5 @@ Cube::Cube()
 		20, 21, 22,
 		20, 22, 23
 	};
+
 }
