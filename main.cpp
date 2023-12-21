@@ -13,6 +13,7 @@
 #include "ShaderProgram.hpp"
 #include "VAO.hpp"
 #include "BufferObject.hpp"
+#include "Camera.hpp"
 #include "Texture.hpp"
 #include "Primitives.hpp"
 
@@ -71,7 +72,7 @@ int main()
 	ebo.Unbind();
 
 	// Light
-	glm::vec3 lightColor = glm::vec3(1.f, 1.f, 0.1f);
+	glm::vec3 lightColor = glm::vec3(1.f, 1.f, 0.8f);
 	VAO lightVAO;
 	lightVAO.Bind();
 
@@ -86,23 +87,20 @@ int main()
 
 	// Coordinate system
 	glm::mat4 model = glm::mat4(1.f);
+	glm::vec3 modelColor = glm::vec3(1.f, 1.f, 1.f);
+	
 	glm::vec3 lightPos = glm::vec3(3.f, 5.f, 4.f);
 	glm::mat4 lightModel = glm::mat4(1.f);
 	lightModel = glm::scale(lightModel, glm::vec3(0.5f, 0.5f, 0.5f));
 	lightModel = glm::translate(lightModel, lightPos);
-	glm::mat4 projection = glm::perspective(glm::radians(70.f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.f);
-	float specularStrength = 0.5f;
-
+	glm::vec3 ambientColor = glm::vec3(1.f) * 0.5f; 
+	
 	// Camera
-	glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 5.f);
-	glm::vec3 cameraFront = glm::vec3(0.f, 0.f, 1.f);
-	glm::vec3 cameraUp = glm::vec3(0.f, 1.f, 0.f);
-	glm::vec3 cameraDirection;
-	float cameraSpeed = 3.0f;
-	const float cameraSens= 0.1f;
-	float pitch, roll, yaw;
-	yaw = -90.f;
-
+	Camera camera(glm::vec3(0.f, 0.f, 5.f),
+			glm::vec3(-90.f, 0.f, 0.f));
+	camera.SetPerspective(70.f,
+			(float)SCREEN_WIDTH / (float)SCREEN_HEIGHT,
+			0.1f, 100.f);
 	// Load shaders
 	Shader vertexShader("shaders/3d-perspective.vert", GL_VERTEX_SHADER);
 	Shader fragmentShader("shaders/texture-shader.frag", GL_FRAGMENT_SHADER);
@@ -131,37 +129,23 @@ int main()
 		if (ev.KeyPressed(GLFW_KEY_ESCAPE))
 			window.Close();
 
-		// Movement
 		if (ev.KeyPressed(GLFW_KEY_W))
-			cameraPos += glm::normalize(glm::vec3(cameraFront.x, 0, cameraFront.z)) * cameraSpeed * deltaTime;
+			camera.Move(glm::vec3(camera.GetFront().x, 0, camera.GetFront().z), deltaTime);
 		if (ev.KeyPressed(GLFW_KEY_S))
-			cameraPos -= glm::normalize(glm::vec3(cameraFront.x, 0, cameraFront.z)) * cameraSpeed * deltaTime;
+			camera.Move(-glm::vec3(camera.GetFront().x, 0, camera.GetFront().z), deltaTime);
 		if (ev.KeyPressed(GLFW_KEY_D))
-			cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
+			camera.Move(camera.GetRight(), deltaTime);
 		if (ev.KeyPressed(GLFW_KEY_A))
-			cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
+			camera.Move(-camera.GetRight(), deltaTime);
 		if (ev.KeyPressed(GLFW_KEY_SPACE))
-			cameraPos += glm::vec3(0.f, 1.f, 0.f) * cameraSpeed * deltaTime;
+			camera.Move(glm::vec3(0.f, 1.f, 0.f), deltaTime);
 		if (ev.KeyPressed(GLFW_KEY_LEFT_SHIFT))
-			cameraPos -= glm::vec3(0.f, 1.f, 0.f) * cameraSpeed * deltaTime;
+			camera.Move(glm::vec3(0.f, -1.f, 0.f), deltaTime);
 
-		// Mouse Movement
-		yaw += ev.GetMouseMovement().x * cameraSens;
-		pitch += ev.GetMouseMovement().y * cameraSens;
-
-		if (pitch > 89.f)
-			pitch = 89.f;
-		else if (pitch  < -89.f)
-			pitch = -89.f;
-
-
-		// Camera logic
-		cameraDirection.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-		cameraDirection.y = sin(glm::radians(pitch));
-		cameraDirection.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	
-		cameraFront = glm::normalize(cameraDirection);
-		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		camera.SetDirection(glm::vec3(
+					ev.GetMouseMovement().x * camera.GetSensitivity(),
+					ev.GetMouseMovement().y * camera.GetSensitivity(),
+					0));
 
 		// Transform
 		float radius = 2.5f;
@@ -181,12 +165,17 @@ int main()
 		// Draw model
 		shaderProgram.Use();
 		shaderProgram.SetUniformMat4f("model", model);
-		shaderProgram.SetUniformMat4f("view", view);
-		shaderProgram.SetUniformMat4f("projection", projection);
-		shaderProgram.SetUniform1i("texSampeler", 0);
+		shaderProgram.SetUniformMat4f("cameraView", camera.GetView());
+		shaderProgram.SetUniform1i("texSampler", 0);
 		shaderProgram.SetUniformVec3f("lightColor", lightColor);
 		shaderProgram.SetUniformVec3f("lightPos", lightPos);
-		shaderProgram.SetUniformVec3f("viewPos", cameraPos);
+		shaderProgram.SetUniformVec3f("viewPos", camera.GetPosition());
+
+
+		shaderProgram.SetUniformVec3f("material.ambient", ambientColor); 
+		shaderProgram.SetUniformVec3f("material.diffuse", modelColor); 
+		shaderProgram.SetUniformVec3f("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		shaderProgram.SetUniform1f("material.shininess", 32.f);
 		
 		vao.Bind();
 		glDrawElements(GL_TRIANGLES, cube.GetIndices().size(), GL_UNSIGNED_INT, 0);
@@ -195,10 +184,8 @@ int main()
 		// Light model
 		lightShaderProgram.Use();
 		lightShaderProgram.SetUniformMat4f("model", lightModel);
-		lightShaderProgram.SetUniformMat4f("view", view);
-		lightShaderProgram.SetUniformMat4f("projection", projection);
+		lightShaderProgram.SetUniformMat4f("cameraView", camera.GetView());
 		lightShaderProgram.SetUniformVec3f("baseColor", lightColor);
-		glUniform3f(lightShaderProgram.GetUniformLocation("baseColor"), lightColor.x, lightColor.y, lightColor.z);
 
 		lightVAO.Bind();
 		glDrawElements(GL_TRIANGLES, cube.GetIndices().size(), GL_UNSIGNED_INT, 0);

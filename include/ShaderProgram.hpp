@@ -51,6 +51,7 @@ public:
 	void SetUniformMat4f(const std::string& uniform, const glm::mat4 value);
 	void SetUniformVec3f(const std::string& uniform, const glm::vec3 value);
 	void SetUniform1i(const std::string& uniform, int value);
+	void SetUniform1f(const std::string& uniform, float value);
 private:
 	GLuint id;
 };

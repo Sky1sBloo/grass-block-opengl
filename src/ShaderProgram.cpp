@@ -51,3 +51,9 @@ void ShaderProgram::SetUniform1i(const std::string& uniform, int value)
 {
 	glUniform1i(GetUniformLocation(uniform), value);
 }
+
+void ShaderProgram::SetUniform1f(const std::string& uniform, float value)
+{
+	glUniform1f(GetUniformLocation(uniform), value);
+}
+
